@@ -1,0 +1,168 @@
+##################################################
+#         start imatt custom PS1		         #
+##################################################
+function __setprompt
+{
+	last_command=$? # Must come first!
+
+	# Define colors
+	##### Selected 256 color palette with easy names see function colors2num for more colors ######
+	# basic colors: (insert ';1' before the last 'm' to get bold(=thicker) variants, i.e. bred='\033[38;05;1;1m'...)
+	red="\033[38;05;124m"
+	grn="\033[38;05;2m"
+	yel="\033[38;05;3m"
+	blu="\033[38;05;4m"		# ng for dark BG
+	pnk="\033[38;05;5m"
+	cya="\033[38;05;6m"
+	wht="\033[38;05;7m"
+	gry="\033[38;05;8m"		# good for not being distracting; subtle
+
+	# intense colors: (same applies for intense and bold, i.e. bired="\033[38;05;9;1m"
+	ired="\033[38;05;9m"
+	igrn="\033[38;05;46m"
+	iyel="\033[38;05;11m"
+	iblu="\033[38;05;12m"		# still ng for dark BGs
+	ipnk="\033[38;05;13m"
+	icya="\033[38;05;14;1m"
+	iwht="\033[38;05;15m"
+	igry="\033[38;05;16m"		# essentially black; shows on grey BG
+	iorg="\033[38;5;208m"
+
+	# add'l colors I like/use:
+	purp="\033[38;05;4m"		# reg purple
+	dpur="\033[38;05;4;1m"		# deep purple (reg + bold)
+	ipur="\033[38;05;4m"		# bright(er) purple
+	bpur="\033[38;05;4;1m"		# bright + bold
+	mgrn="\033[38;05;28m"		# muted green for exit status fill line
+	bgrn="\033[38;05;10;1m"		# bright + bold green
+	borg="\033[38;5;208;1m"
+	bpnk="\033[38;5;165;1m"
+	rset="\033[0m"
+	
+	# create a $fill of all screen width minus the time string and a space:
+
+	let fillsize=${COLUMNS}-12
+
+	fill=""
+
+	while [ "$fillsize" -gt "0" ]
+
+	do
+
+	fill="-${fill}" # fill with underscores to work on
+
+	let fillsize=${fillsize}-1
+
+	done
+
+	# Show error exit code if there is one
+	if [[ $last_command != 0 ]]; then
+		
+		PS1="\[${red}\]😡  $fill \@\n\[${gry}\][\[${red}\]Error \[${ired}\]${last_command}\[${gry}\]]-[\[${red}\]"
+		
+		if [[ $last_command == 1 ]]; then
+			PS1+="General error"
+		elif [ $last_command == 2 ]; then
+			PS1+="Missing keyword, command, or permission problem"
+		elif [ $last_command == 126 ]; then
+			PS1+="Permission problem or command is not an executable"
+		elif [ $last_command == 127 ]; then
+			PS1+="Command not found"
+		elif [ $last_command == 128 ]; then
+			PS1+="Invalid argument to exit"
+		elif [ $last_command == 129 ]; then
+			PS1+="Fatal error signal 1"
+		elif [ $last_command == 130 ]; then
+			PS1+="Script terminated by Control-C"
+		elif [ $last_command == 131 ]; then
+			PS1+="Fatal error signal 3"
+		elif [ $last_command == 132 ]; then
+			PS1+="Fatal error signal 4"
+		elif [ $last_command == 133 ]; then
+			PS1+="Fatal error signal 5"
+		elif [ $last_command == 134 ]; then
+			PS1+="Fatal error signal 6"
+		elif [ $last_command == 135 ]; then
+			PS1+="Fatal error signal 7"
+		elif [ $last_command == 136 ]; then
+			PS1+="Fatal error signal 8"
+		elif [ $last_command == 137 ]; then
+			PS1+="Fatal error signal 9"
+		elif [ $last_command -gt 255 ]; then
+			PS1+="Exit status out of range"
+		else
+			PS1+="Unknown error code"
+		fi
+		PS1+="\[${gry}\]]\[${rset}\] try again? \n"
+	else
+		PS1="\[${grn}\]😎  $fill \@"
+	fi
+
+	# PS1+="\[${gry}\]["
+
+	# User and server
+	 SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
+	 SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
+	  if [ $SSH2_IP ] || [ $SSH_IP ] ; then
+		PS1+="\[${bgrn}\]\u\[${rset}\] (remote) on "
+	  else
+		PS1+="\[${bpur}\]\u\[${rset}\] is on "
+	  fi
+
+	# Date
+	# PS1+="\[${DARKGRAY}\](\[${CYAN}\]\$(date +%a) $(date +%b-'%-m')" # Date
+	# PS1+="${blu} $(date +'%-I':%M:%S%P)\[${gry}\])-" # Time
+
+	# Host
+	  PS1+="\[${borg}\]\h\[${rset}\]"		
+
+	# CPU
+	# PS1+="(\[${MAGENTA}\]CPU $(cpu)%"
+
+	# Jobs
+	# PS1+="\[${gry}\]:\[${MAGENTA}\]\j"
+
+	# Network Connections (for a server - comment out for non-server)
+	# PS1+="\[${gry}\]:\[${MAGENTA}\]Net $(awk 'END {print NR}' /proc/net/tcp)"
+
+	# Current directory
+	PS1+="\[${rset}\] in \[${iyel}\]\w\[${rset}\] which has"
+
+	# Number of files
+	PS1+="\[${icya}\]\[$(/bin/ls -A -1 | /usr/bin/wc -l)\[${rset}\] files using "	
+	
+	# Total size of files in current directory
+	PS1+="\[${icya}\]$(/bin/ls -lah | /usr/bin/grep -m 1 total | /usr/bin/sed 's/total //')K\[${gry}\]"
+
+	# Skip to the next line
+	PS1+="\n"
+
+	if [[ $EUID -ne 0 ]]; then
+		PS1+="\[${grn}\]=> \[${rset}\]" # Normal user
+	else
+		PS1+="\[${ired}\]=> \[${rset}\]" # Root user
+	fi
+	
+	# PS2 is used to continue a command using the \ character
+	PS2="\[${gry}\]>\[${rset}\] "
+
+	# PS3 is used to enter a number choice in a script
+	PS3='Please enter a number from above list: '
+
+	# PS4 is used for tracing a script in debug mode
+	PS4='\[${gry}\]+\[${rset}\] '
+	
+	# echo "\[${gry}\] executed $fill  \@"
+	
+	# Reset color for command output
+
+	# this one is invoked every time before a command is executed:
+	
+	trap 'echo -ne "\033[0m"' DEBUG
+					
+	
+}
+PROMPT_COMMAND='__setprompt'
+##################################################
+#         End imatt(ux) custom PS1		         #
+##################################################
