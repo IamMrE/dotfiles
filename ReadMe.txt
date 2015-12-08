@@ -3,3 +3,4 @@ I'll soon have 2 branches, one for Mac and one for Linux...
 
 TODO: 
 • Acknowledge the origins of the files
+• Create Mac & Linux branches
